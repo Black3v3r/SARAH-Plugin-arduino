@@ -1,0 +1,58 @@
+<grammar version="1.0" xml:lang="fr-FR" mode="voice" root="ruleArduino" xmlns="http://www.w3.org/2001/06/grammar" tag-format="semantics/1.0">
+  <rule id="ruleArduino" scope="public">
+    <example>Sarah allume led 1</example>
+    <tag>out.action=new Object(); </tag>
+
+    <item>Sarah</item>
+
+    <one-of>
+      <item>
+      <one-of>
+        <item>Température<tag>out.action.sensor="a0"</tag></item>
+        <item>Led 1<tag>out.action.sensor="led1"</tag></item>
+      </one-of>
+      <tag>out.action.act="get"</tag>
+      </item>
+
+      <item>
+      <one-of>
+        <item>Allume
+          <one-of>
+            <item>
+            <one-of>
+              <item>Led 1<tag>out.action.actor="a5"</tag></item>
+            </one-of>
+            <tag>out.action.value="255"</tag>
+            </item>
+            <item>
+            <one-of>
+              <item>la lampe<tag>out.action.actor="r44"</tag></item>
+            </one-of>
+            <tag>out.action.value="1"</tag>
+            </item>
+          </one-of>
+        </item>
+        <item>Eteins
+          <one-of>
+            <item>
+            <one-of>
+              <item>Led 1<tag>out.action.actor="a5"</tag></item>
+            </one-of>
+            <tag>out.action.value="0"</tag>
+            </item>
+            <item>
+            <one-of>
+              <item>la lampe<tag>out.action.actor="r44"</tag></item>
+            </one-of>
+            <tag>out.action.value="0"</tag>
+            </item>
+          </one-of>
+        </item>
+      </one-of>
+      <tag>out.action.act="set"</tag>
+      </item>
+    </one-of>
+
+    <tag>out.action._attributes.uri="http://127.0.0.1:8080/sarah/arduino";</tag>
+  </rule> 
+</grammar>

@@ -1,0 +1,8 @@
+{
+  "modules": { 
+    "arduino": {
+      "description": "dialoguer avec une arduino",
+      "version": "0.1"
+    }
+  }
+}
