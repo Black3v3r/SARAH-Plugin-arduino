@@ -1,8 +1,9 @@
 {
   "modules": { 
     "arduino": {
-      "description": "dialoguer avec une arduino",
-      "version": "0.1"
+      "IP_arduino": "http://192.168.1.3/",
+      "description": "Dialoguer avec une arduino",
+      "version": "1.0"
     }
   }
 }

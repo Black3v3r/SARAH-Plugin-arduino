@@ -1,11 +1,11 @@
 exports.action = function(data, callback, config, SARAH) {
   var act = data.act;
-  // var config = config.modules.skype;
+  var config = config.modules.arduino;
   console.log("act: " + act);
   console.log("value: " + data.value);
   console.log("sensor: " + data.sensor);
   console.log("actor: " + data.actor);
-  var adresse = 'http://192.168.1.3/' + act + '/?';
+  var adresse = config.IP_arduino + act + '/?';
   if (act == 'get') {
   	adresse += 'sensor=' + data.sensor;
   }
