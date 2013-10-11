@@ -33,7 +33,7 @@ RCSwitch mySwitch = RCSwitch();
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress ip(192,168,1,3);
+IPAddress ip(192,168,1,3);    // CONFIG (adresse de l'arduino)
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use 
@@ -46,7 +46,7 @@ int e = 0;
 int i;
 String ln = String("\r\n");
 
-int RECV_PIN = 7;
+int RECV_PIN = 7;     //CONFIG (pin du récepteur infrarouge)
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 
@@ -60,15 +60,15 @@ void action_set(String request, String *body, int *err);
 
 void setup() {
   //Pins
-  pinMode(0,OUTPUT);
+  pinMode(0,OUTPUT);  // @TODO: Vérifier l'utilité de cette ligne...
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
    while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
-  mySwitch.enableReceive(0);  // 433Mhz Rx
-  mySwitch.enableTransmit(3); // 433Mhz Tx
+  mySwitch.enableReceive(0);  // 433Mhz Rx (récepteur 433Mhz) Correspond à la pin d2    // CONFIG
+  mySwitch.enableTransmit(3); // 433Mhz Tx (emetteur 433Mhz) // CONFIG
 
   irrecv.enableIRIn(); // Start the IR receiver
 
@@ -120,10 +120,10 @@ void loop() {
             Serial.println("Erreur: ");
             Serial.println(err);
           // send a standard http response header
-          if (err == 200) {
-            client.println("HTTP/1.1 200 OK");
-          } else {
-            client.println("HTTP/1.1 400 Bad Request");
+          if (err == 200) {                               //
+            client.println("HTTP/1.1 200 OK");            //  TODO: modifier pour retourner les codes d'erreur
+          } else {                                        //
+            client.println("HTTP/1.1 400 Bad Request");   //
           }
           client.println("Content-Type: text/html");
           client.println("Connnection: close");
@@ -154,7 +154,7 @@ void loop() {
     Serial.println();
   }
 
-  if (mySwitch.available()) {
+  if (mySwitch.available()) {                   // Pour utilisation d'un récepteur 433Mhz (utile pour cloner une télécommande SANS ROLLING CODE)
     int value = mySwitch.getReceivedValue();
     if (value == 0) {
       Serial.print("Unknown encoding");
@@ -170,19 +170,19 @@ void loop() {
     mySwitch.resetAvailable();
   }
 
-  if (irrecv.decode(&results)) {
+  if (irrecv.decode(&results)) {                // Récepteur IR
     irrecv.resume(); // Receive the next value
     time = millis();
     Serial.println(millis());
     e = 1;
   }
-  if (((millis() - time) > 400) && e) {
+  if (((millis() - time) > 400) && e) {         // Pour gérer une télécommande qui envoie des codes différents lors d'un appui long, et pour empécher la surcharge
     Serial.println(millis() - time);
     Serial.println(results.value, HEX);
-        if (client.connect("192.168.1.4", 8080)) {
+        if (client.connect("192.168.1.4", 8080)) { // CONFIG ip de SARAH-server
     Serial.println("connecting...");
     // send the HTTP PUT request:
-    client.print("GET /sarah/ir?ref=arduino&code=");
+    client.print("GET /sarah/ir?ref=arduino&code=");// Plugin IR bientôt disponible
     client.print(results.value, HEX);
     client.print("&type=");
     client.print(results.decode_type);
@@ -203,37 +203,10 @@ void loop() {
   
     e = 0;
   }
-
-  /*if (irrecv.decode(&results)) {
-    Serial.println(results.value, HEX);
-    irrecv.resume(); // Receive the next value
-    // if there's a successful connection:
-    if (client.connect("192.168.1.4", 8080)) {
-    Serial.println("connecting...");
-    // send the HTTP PUT request:
-    client.print("GET /sarah/ir?ref=arduino&code=");
-    client.print(results.value, HEX);
-    client.print("&type=");
-    client.print(results.decode_type);
-    client.println(" HTTP/1.1");
-    client.println("Host: 192.168.1.4");
-    client.println("User-Agent: arduino-ethernet");
-    client.println("Connection: close");
-    client.println();
-
-  } 
-  else {
-    // if you couldn't make a connection:
-    Serial.println("connection failed");
-    Serial.println("disconnecting.");
-    client.stop();
-  }
-  client.stop();
-  }*/
 }
 
 
-void parse(String request, String *body, int *err) {
+void parse(String request, String *body, int *err) {            //Fonction servant à parser la requête GET (voir syntaxe en haut du fichier)
   request = request.substring(4, request.length() - 11);
   Serial.println(request);
 
@@ -254,21 +227,21 @@ else {
 }
 
 
-void action_get(String request, String *body, int *err) {
+void action_get(String request, String *body, int *err) {     // Pour récupérer des informations 
   Serial.println("get");
   char pinChar[request.substring(14).length() + 1];
   request.substring(14).toCharArray(pinChar, sizeof(pinChar));
   int pin = atoi(pinChar);
   // digital read
   if ((request.charAt(13) == 'd') || (request.charAt(13) == 'D')) {
-    switch (pin) {
+    switch (pin) {                                            // Switch permettant de transformer préalablement les données avant l'envoi (à éviter, privilégier un traitement côté SARAH-serveur, pour éviter la surcharge et ne pas dépasser la limite de place de l'arduino)
       default:
       *body += (digitalRead(pin)) + ln;
     }
   }
   // analog read
   else if ((request.charAt(13) == 'a') || (request.charAt(13) == 'A')) {
-    switch (pin) {
+    switch (pin) {                                            // Idem que le commentaire précédent, ici dans le cas d'un analog read
       case 1337:
       *body += map(analogRead(14), 0, 1023, 100, 0) + ln;
       break;
@@ -283,7 +256,7 @@ void action_get(String request, String *body, int *err) {
 }
 
 
-void action_set(String request, String *body, int *err) {
+void action_set(String request, String *body, int *err) {     // Pour effectuer des actions
   Serial.println("set");
   char pinChar[request.substring(7, request.indexOf("=")).length() + 1];
   request.substring(7, request.indexOf("=")).toCharArray(pinChar, sizeof(pinChar));
@@ -297,15 +270,15 @@ void action_set(String request, String *body, int *err) {
   Serial.println(value);
   if ((request.charAt(6) == 'd') || (request.charAt(6) == 'D')) {
     Serial.println("digital");
-    switch (pin) {
+    switch (pin) {                                           // Même utilité que dans la fonction action_get()
       default:
       digitalWrite(pin, value);
     }
   }
   else if ((request.charAt(6) == 'a') || (request.charAt(6) == 'A')) {
-    switch (pin) {
+    switch (pin) {                                           // // Même utilité que dans la fonction action_get()
       default:
-      analogWrite(pin, value);
+      analogWrite(pin, value); // Attention, analogWrite ne veut en rien dire que l'on écrit obligatoirement sur une pin Analog, c'est pour différencier de digitalWrite (1 ou 0, ici 0-255) pour écrire sur une pin digital, indiquer le nombre simplement, pour écrire sur de l'analog, ajouer 14 au n° de la pin. Exemple, pour A0 écrire /set/?a14=val
     }
   }
   else if (request.charAt(6) == 'r') {
@@ -313,7 +286,7 @@ void action_set(String request, String *body, int *err) {
     int group = pin / 10;
     int num = pin % 10;
 
-    switch (pin) {
+    switch (pin) { // Permet de controller l'emmetteur 433Mhz avec un requête du type /set/?r42=1, r correspondant à "radio" => emetteur, 44 corespondant à groupe et n° dans le groupe (eg: 42: groupe 4, n°2) cf doc de la librairie: http://code.google.com/p/rc-switch/wiki/HowTo_OperateLowCostOutlets
       case 00:
       Serial.println("Hello, World !");
         if (value == 1) {
