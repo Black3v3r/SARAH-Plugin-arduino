@@ -206,25 +206,25 @@ void loop() {
 }
 
 
-void parse(String request, String *body, int *err) {            //Fonction servant à parser la requête GET (voir syntaxe en haut du fichier)
-  request = request.substring(4, request.length() - 11);
+void parse(String request, String *body, int *err) {            //Fonction servant à parser la requête GET (ou POST si les informations sont dans la query string) (voir syntaxe en haut du fichier)
+  request = request.substring(request.indexOf('/'), request.length() - 11);
   Serial.println(request);
 
-if (request.charAt(1) == 'g') {
-  // Get
-  action_get(request, &*body, &*err);
-}
-// Set
-else if (request.charAt(1) == 's') {
-
-  action_set(request, &*body, &*err);
+  if (request.charAt(1) == 'g') {
+    // Get
+    action_get(request, &*body, &*err);
+  }
+  // Set
+  else if (request.charAt(1) == 's') {
   
-}
-else {
-  Serial.println("Erreur de lecture de la requête");
-  *err = 400;
-}
-}
+    action_set(request, &*body, &*err);
+    
+  }
+  else {
+    Serial.println("Erreur de lecture de la requête");
+    *err = 400;
+  }
+  }
 
 
 void action_get(String request, String *body, int *err) {     // Pour récupérer des informations 
@@ -285,9 +285,17 @@ void action_set(String request, String *body, int *err) {     // Pour effectuer 
     Serial.println("RCSwitch");
     int group = pin / 10;
     int num = pin % 10;
+    if (group == 0)       // Permet de gérer les récepteurs, prenant des lettres et non des chiffres en compte
+    {
+      group = pinChar[0];
+    }
+    if (num == 0)
+    {
+      num = pinChar[1];
+    }
 
     switch (pin) { // Permet de controller l'emmetteur 433Mhz avec un requête du type /set/?r42=1, r correspondant à "radio" => emetteur, 44 corespondant à groupe et n° dans le groupe (eg: 42: groupe 4, n°2) cf doc de la librairie: http://code.google.com/p/rc-switch/wiki/HowTo_OperateLowCostOutlets
-      case 00:
+      case 1337:
       Serial.println("Hello, World !");
         if (value == 1) {
           Serial.println("On");
